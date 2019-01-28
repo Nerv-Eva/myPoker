@@ -24,10 +24,47 @@ export default class App extends React.Component {
         super(props);
         this.state = {
             width: Math.floor(Dimensions.get('window').width/7 -40),
-            height: Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88,
-            cardNumber: this.props.cardNumber,
-            flowerKey: this.props.flowerKey,
-            style: this.props.style
+            height: Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88
+        }
+    }
+
+    componentWillMount () {
+        Dimensions.addEventListener('change', ({window}) => {
+            this.setState({
+                width: Math.floor(window.width/7 -40),
+                height: Math.floor(window.width/7 -40) / 63 * 88
+            });
+        });
+    }
+
+    getFlowerImage () {
+        if (this.props.flowerKey === 0) {
+            return (
+                <Image
+                source={require('../assets/Spade.png')}
+                resizeMode={'stretch'}
+                style={{width: this.state.width/5, height: this.state.width/5}} />);
+        }
+        if (this.props.flowerKey === 1) {
+            return (
+                <Image
+                    source={require('../assets/Heart.png')}
+                    resizeMode={'stretch'}
+                    style={{width: this.state.width/5, height: this.state.width/5}} />);
+        }
+        if (this.props.flowerKey === 2) {
+            return (
+                <Image
+                    source={require('../assets/Diamond.png')}
+                    resizeMode={'stretch'}
+                    style={{width: this.state.width/5, height: this.state.width/5}} />);
+        }
+        if (this.props.flowerKey === 3) {
+            return (
+                <Image
+                    source={require('../assets/Club.png')}
+                    resizeMode={'stretch'}
+                    style={{width: this.state.width/5, height: this.state.width/5}} />);
         }
     }
 
@@ -36,39 +73,15 @@ export default class App extends React.Component {
             return (<Image
                 source={require('../assets/back.png')}
                 resizeMode={'stretch'}
-                style={[{width: this.state.width, height: this.state.height}, styles.container, this.state.style]}
+                style={[{width: this.state.width, height: this.state.height}, styles.container, this.props.style]}
             ></Image>);
         }
-        let image;
-        do {
-            if (this.state.flowerKey === 0) {
-                image = require('../assets/Spade.png');
-                break;
-            }
-            if (this.state.flowerKey === 1) {
-                image = require('../assets/Heart.png');
-                break;
-            }
-            if (this.state.flowerKey === 2) {
-                image = require('../assets/Diamond.png');
-                break;
-            }
-            if (this.state.flowerKey === 3) {
-                image = require('../assets/Club.png');
-                break;
-            }
-
-        } while(false);
 
         return (
-            <View style={[styles.container, { width: this.state.width, height: this.state.height }, this.props.isSelected ? {borderWidth: 4, borderColor: '#00a5a6'} : {}, this.state.style]}>
+            <View style={[styles.container, { width: this.state.width, height: this.state.height }, this.props.isSelected ? {borderWidth: 4, borderColor: '#00a5a6'} : {}, this.props.style]}>
                 <View style={[styles.cardMark, {width: this.state.width/5, height: this.state.width/5}]}>
-                    <Text style={styles.cardName}>{numberToName[this.state.cardNumber]}</Text>
-                    <Image
-                        source={image}
-                        resizeMode={'stretch'}
-                        style={{width: this.state.width/5, height: this.state.width/5}}
-                    ></Image>
+                    <Text style={[styles.cardName, {color: (this.props.flowerKey === 1 || this.props.flowerKey === 2) ? 'red' : 'black'}]}>{numberToName[this.props.cardNumber]}</Text>
+                    {this.getFlowerImage()}
                 </View>
             </View>
         );

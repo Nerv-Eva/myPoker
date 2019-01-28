@@ -4,9 +4,6 @@ import Card from './components/Card';
 
 const keyToflower = ['Spade', 'Heart', 'Diamond', 'Club']  // 黑桃（Spade）、红桃（Heart）、方块（Diamond）、梅花（Club）
 
-const pokerWidth = Math.floor(Dimensions.get('window').width/7 -40);
-const pokerHeight = Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88;
-
 export default class App extends React.Component {
 
     constructor (props) {
@@ -17,12 +14,21 @@ export default class App extends React.Component {
             storePokers: [],
             selected: '',
             tablePokers: [],
-            finishPokers: []
+            finishPokers: [],
+            pokerWidth: Math.floor(Dimensions.get('window').width/7 -40),
+            pokerHeight: Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88
         }
+
     }
 
     componentWillMount () {
         this.restart()
+        Dimensions.addEventListener('change', ({window}) => {
+            this.setState({
+                pokerWidth: Math.floor(window.width/7 -40),
+                pokerHeight: Math.floor(window.width/7 -40) / 63 * 88
+            });
+        });
     }
 
     restart () {
@@ -48,6 +54,13 @@ export default class App extends React.Component {
         });
     }
 
+    isWin () {
+        if (this.state.finishPokers[0].length === 13 && this.state.finishPokers[1].length === 13 && this.state.finishPokers[2].length === 13 && this.state.finishPokers[3].length === 13) {
+            alert('win');
+            this.restart();
+        }
+    }
+
     randomGetACard () {
         if (this.getLeftCard() <= 0) return null;
         let flower
@@ -65,8 +78,11 @@ export default class App extends React.Component {
 
     renderFinishPokers(pokers, index) {
         return (
-            <TouchableWithoutFeedback onPress={this._onPressFinish.bind(this, index)}>
-                <View style={styles.listBase} key={index}>{pokers.map((poker, index) => <Card key={index} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen}/>)}</View>
+            <TouchableWithoutFeedback key={index} onPress={this._onPressFinish.bind(this, index)}>
+                <View style={[styles.listBase, {
+                    width: this.state.pokerWidth,
+                    height: this.state.pokerHeight
+                }]}>{pokers.map((poker, index) => <Card key={index} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen}/>)}</View>
             </TouchableWithoutFeedback>
         )
     }
@@ -109,6 +125,7 @@ export default class App extends React.Component {
         }
 
         this._cleanSelect();
+        this.isWin();
     }
 
     _fromStoreToFinish (index) {
@@ -243,20 +260,23 @@ export default class App extends React.Component {
     render () {
         return (
             <View style={styles.container}>
-                <View style={[styles.storeArea, {height: Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88}]}>
+                <View style={[styles.storeArea, {height: this.state.pokerHeight}]}>
                     <View style={styles.storePokers}>
                         <TouchableOpacity onPress={this._onPressStore.bind(this)}>
-                            <View style={styles.listBase}>
+                            <View style={[styles.listBase, {
+                                width: this.state.pokerWidth,
+                                height: this.state.pokerHeight
+                            }]}>
                                 {this.state.storePokers.map((poker, index) => (<Card key={index} style={{left: index*0.3}} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen} />))}
                             </View>
                         </TouchableOpacity>
                         <TouchableWithoutFeedback onPress={this._onPressShownStore.bind(this)}>
-                        <View style={{width: pokerWidth*2}}>
+                            <View style={{width: this.state.pokerWidth*2}}>
 
-                            {this.state.shownStorePokers.map((poker, index) => (<Card key={index} style={[
-                                {left: index > (this.state.shownStorePokers.length -3) ? (index - this.state.shownStorePokers.length + 3) * 25 : 0}]} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen} isSelected={index === this.state.shownStorePokers.length - 1 && this.state.selected==='shown'}/>))}
+                                {this.state.shownStorePokers.map((poker, index) => (<Card key={index} style={[
+                                    {left: index > (this.state.shownStorePokers.length -3) ? (index - this.state.shownStorePokers.length + 3) * 25 : 0}]} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen} isSelected={index === this.state.shownStorePokers.length - 1 && this.state.selected==='shown'}/>))}
 
-                        </View>
+                            </View>
                         </TouchableWithoutFeedback>
                     </View>
                     <View style={styles.finishArea}>
@@ -264,7 +284,7 @@ export default class App extends React.Component {
                     </View>
                 </View>
                 <View style={styles.table}>
-                    {this.state.tablePokers.map((pokers, index) => (<TouchableWithoutFeedback key={index} onPress={this._tablePokerSelect.bind(this, index)}><View style={{ position: 'relative', width: pokerWidth, height: pokerHeight * 2 }}>
+                    {this.state.tablePokers.map((pokers, index) => (<TouchableWithoutFeedback key={index} onPress={this._tablePokerSelect.bind(this, index)}><View style={{ position: 'relative', width: this.state.pokerWidth, height: this.state.pokerHeight * 2 }}>
                         {pokers.map((poker, index) => (<Card key={index} style={{top: index*15}} cardNumber={poker.cardNumber} flowerKey={poker.flowerKey} isOpen={poker.isOpen} />))}
                     </View></TouchableWithoutFeedback>))}
                 </View>
@@ -276,12 +296,12 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: Dimensions.get('window').width,
+        width: '100%',
         backgroundColor: '#0f8013',
     },
     table: {
         flexDirection: 'row',
-        width: Dimensions.get('window').width,
+        width: '100%',
         justifyContent: 'space-around',
         paddingLeft: 20,
         paddingRight: 20
@@ -307,8 +327,6 @@ const styles = StyleSheet.create({
         borderColor: '#999',
         borderStyle: 'dashed',
         borderRadius: 10,
-        width: Math.floor(Dimensions.get('window').width/7 -40),
-        height: Math.floor(Dimensions.get('window').width/7 -40) / 63 * 88,
         marginLeft: 10,
         marginRight: 15
     }
